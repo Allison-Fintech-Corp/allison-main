@@ -1,6 +1,7 @@
 import Workspace from "@/models/workspace";
 import paths from "@/utils/paths";
 import showToast from "@/utils/toast";
+import ModalWrapper from "@/components/ModalWrapper";
 import {
   ArrowCounterClockwise,
   DotsThree,
@@ -160,11 +161,13 @@ function OptionsMenu({
   currentThreadSlug,
 }) {
   const menuRef = useRef(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Ref menu options
   const outsideClick = (e) => {
     if (!menuRef.current) return false;
     if (
+      !confirmOpen &&
       !menuRef.current?.contains(e.target) &&
       !containerRef.current?.contains(e.target)
     )
@@ -173,6 +176,7 @@ function OptionsMenu({
   };
 
   const isEsc = (e) => {
+    if (confirmOpen) return; // keep menu open while modal is active
     if (e.key === "Escape" || e.key === "Esc") close();
   };
 
@@ -191,7 +195,7 @@ function OptionsMenu({
 
     setListeners();
     return cleanupListeners;
-  }, [menuRef.current, containerRef.current]);
+  }, [menuRef.current, containerRef.current, confirmOpen]);
 
   const renameThread = async () => {
     const name = window
@@ -219,50 +223,77 @@ function OptionsMenu({
     close();
   };
 
-  const handleDelete = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this thread? All of its chats will be deleted. You cannot undo this."
-      )
-    )
-      return;
+  const performDelete = async () => {
     const success = await Workspace.threads.delete(workspace.slug, thread.slug);
     if (!success) {
       showToast("Thread could not be deleted!", "error", { clear: true });
       return;
     }
-    if (success) {
-      showToast("Thread deleted successfully!", "success", { clear: true });
-      onRemove(thread.id);
-      // Redirect if deleting the active thread
-      if (currentThreadSlug === thread.slug) {
-        window.location.href = paths.workspace.chat(workspace.slug);
-      }
-      return;
+    showToast("Thread deleted successfully!", "success", { clear: true });
+    onRemove(thread.id);
+    setConfirmOpen(false);
+    // Redirect if deleting the active thread
+    if (currentThreadSlug === thread.slug) {
+      window.location.href = paths.workspace.chat(workspace.slug);
     }
   };
 
+  const handleDelete = () => setConfirmOpen(true);
+
   return (
-    <div
-      ref={menuRef}
-      className="absolute w-fit z-[20] top-[25px] right-[10px] bg-zinc-900 light:bg-theme-bg-sidebar light:border-[1px] light:border-theme-sidebar-border rounded-lg p-1"
-    >
-      <button
-        onClick={renameThread}
-        type="button"
-        className="w-full rounded-md flex items-center p-2 gap-x-2 hover:bg-slate-500/20 text-slate-300 light:text-theme-text-primary"
+    <>
+      <div
+        ref={menuRef}
+        className="absolute w-fit z-[20] top-[25px] right-[10px] bg-zinc-900 light:bg-theme-bg-sidebar light:border-[1px] light:border-theme-sidebar-border rounded-lg p-1"
       >
-        <PencilSimple size={18} />
-        <p className="text-sm">Rename</p>
-      </button>
-      <button
-        onClick={handleDelete}
-        type="button"
-        className="w-full rounded-md flex items-center p-2 gap-x-2 hover:bg-red-500/20 text-slate-300 light:text-theme-text-primary hover:text-red-100"
-      >
-        <Trash size={18} />
-        <p className="text-sm">Delete Thread</p>
-      </button>
-    </div>
+        <button
+          onClick={renameThread}
+          type="button"
+          className="w-full rounded-md flex items-center p-2 gap-x-2 hover:bg-slate-500/20 text-slate-300 light:text-theme-text-primary"
+        >
+          <PencilSimple size={18} />
+          <p className="text-sm">Rename</p>
+        </button>
+        <button
+          onClick={handleDelete}
+          type="button"
+          className="w-full rounded-md flex items-center p-2 gap-x-2 hover:bg-red-500/20 text-slate-300 light:text-theme-text-primary hover:text-red-100"
+        >
+          <Trash size={18} />
+          <p className="text-sm">Delete Thread</p>
+        </button>
+      </div>
+
+      <ModalWrapper isOpen={confirmOpen}>
+        <div className="w-full max-w-md bg-theme-bg-secondary rounded-lg shadow border-2 border-theme-modal-border overflow-hidden">
+          <div className="relative p-6 border-b rounded-t border-theme-modal-border">
+            <h3 className="text-lg font-semibold text-white light:text-theme-text-primary">
+              Delete thread?
+            </h3>
+          </div>
+          <div className="py-6 px-6 space-y-2">
+            <p className="text-sm text-white/80 light:text-theme-text-secondary">
+              Are you sure you want to delete this thread? All of its chats will be deleted. You cannot undo this.
+            </p>
+          </div>
+          <div className="flex w-full justify-end items-center p-4 space-x-2 border-t border-theme-modal-border rounded-b">
+            <button
+              onClick={() => setConfirmOpen(false)}
+              className="transition-all duration-300 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={performDelete}
+              className="transition-all duration-300 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+              type="button"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </ModalWrapper>
+    </>
   );
 }

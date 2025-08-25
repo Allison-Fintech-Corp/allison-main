@@ -139,13 +139,12 @@ export default function SettingsSidebar() {
       <div>
         <Link
           to={paths.home()}
-          className="flex shrink-0 max-w-[55%] items-center justify-start mx-[38px] my-[18px]"
+          className="flex shrink-0 w-[250px] min-w-[250px] items-center justify-start mx-[38px] my-[18px]"
         >
           <img
             src={logo}
             alt="Logo"
-            className="rounded max-h-[24px]"
-            style={{ objectFit: "contain" }}
+            className="rounded h-[24px] w-[220px] object-cover transition-opacity duration-500 opacity-100 shrink-0"
           />
         </Link>
         <div
@@ -295,30 +294,7 @@ const SidebarOptions = ({ user = null, t }) => (
           flex={true}
           roles={["admin"]}
         />
-        <Option
-          btnText="Community Hub"
-          icon={<Globe className="h-5 w-5 flex-shrink-0" />}
-          childOptions={[
-            {
-              btnText: "Explore Trending",
-              href: paths.communityHub.trending(),
-              flex: true,
-              roles: ["admin"],
-            },
-            {
-              btnText: "Your Account",
-              href: paths.communityHub.authentication(),
-              flex: true,
-              roles: ["admin"],
-            },
-            {
-              btnText: "Import Item",
-              href: paths.communityHub.importItem(),
-              flex: true,
-              roles: ["admin"],
-            },
-          ]}
-        />
+        {/* Community Hub section hidden for Allison demo */}
         <Option
           btnText={t("settings.customization")}
           icon={<PencilSimpleLine className="h-5 w-5 flex-shrink-0" />}

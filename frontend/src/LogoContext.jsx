@@ -1,6 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import AnythingLLM from "./media/logo/anything-llm.png";
-import AnythingLLMDark from "./media/logo/anything-llm-dark.png";
+// Use public Allison assets for demo (light theme only)
 import DefaultLoginLogoLight from "./media/illustrations/login-logo.svg";
 import DefaultLoginLogoDark from "./media/illustrations/login-logo-light.svg";
 import System from "./models/system";
@@ -25,16 +24,14 @@ export function LogoProvider({ children }) {
         setLoginLogo(isCustomLogo ? logoURL : DefaultLoginLogo);
         setIsCustomLogo(isCustomLogo);
       } else {
-        localStorage.getItem("theme") !== "default"
-          ? setLogo(AnythingLLMDark)
-          : setLogo(AnythingLLM);
+        // For the demo we always use the Allison light logo from public assets
+        setLogo("/allison_lightback_logo.png");
         setLoginLogo(DefaultLoginLogo);
         setIsCustomLogo(false);
       }
     } catch (err) {
-      localStorage.getItem("theme") !== "default"
-        ? setLogo(AnythingLLMDark)
-        : setLogo(AnythingLLM);
+      // Fallback to the public Allison light logo
+      setLogo("/allison_lightback_logo.png");
       setLoginLogo(DefaultLoginLogo);
       setIsCustomLogo(false);
       console.error("Failed to fetch logo:", err);

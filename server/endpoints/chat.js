@@ -21,6 +21,35 @@ const { getModelTag } = require("./utils");
 function chatEndpoints(app) {
   if (!app) return;
 
+  function summarizeTitle(input) {
+    try {
+      const MAX = 60;
+      if (!input) return "";
+      let text = String(input).trim();
+      // take first line
+      text = text.split(/\r?\n/)[0];
+      // strip markdown/code ticks and headings
+      text = text.replace(/^#+\s*/, "");
+      text = text.replace(/`+/g, "");
+      // strip urls
+      text = text.replace(/https?:\/\/\S+/g, "");
+      // common prompt prefixes
+      text = text.replace(/^\s*(please\s+)?(write|explain|describe|create|implement|how\s+(do|to)|what\s+is|can\s+you|help\s+me|summarize|draft|generate|build|show\s+me|give\s+me)\b[:,-]?\s*/i, "");
+      // use first sentence-ish
+      const sentenceEnd = text.search(/[.!?]/);
+      if (sentenceEnd > 8) text = text.slice(0, sentenceEnd + 1);
+      // collapse spaces and trim punctuation
+      text = text.replace(/\s+/g, " ").trim();
+      text = text.replace(/^[-–•\s]+/, "").replace(/[\s:;,-]+$/, "");
+      // Titlecase first char
+      if (text.length > 0) text = text[0].toUpperCase() + text.slice(1);
+      if (text.length === 0) return "Thread";
+      return truncate(text, MAX);
+    } catch (_) {
+      return truncate(String(input || "Thread"), 60);
+    }
+  }
+
   app.post(
     "/workspace/:slug/stream-chat",
     [validatedRequest, flexUserRoleValid([ROLES.all]), validWorkspaceSlug],
@@ -162,7 +191,7 @@ function chatEndpoints(app) {
           thread,
           workspace,
           user,
-          newName: truncate(message, 22),
+          newName: summarizeTitle(message),
           onRename: (thread) => {
             writeResponseChunk(response, {
               action: "rename_thread",

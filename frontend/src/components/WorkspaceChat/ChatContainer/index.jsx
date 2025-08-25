@@ -6,6 +6,7 @@ import PromptInput, {
   PROMPT_INPUT_ID,
 } from "./PromptInput";
 import Workspace from "@/models/workspace";
+import paths from "@/utils/paths";
 import handleChat, { ABORT_STREAM_EVENT } from "@/utils/chat";
 import { isMobile } from "react-device-detect";
 import { SidebarMobileHeader } from "../../Sidebar";
@@ -304,7 +305,10 @@ export default function ChatContainer({ workspace, knownHistory = [] }) {
       className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[16px] bg-theme-bg-secondary w-full h-full overflow-y-scroll no-scroll z-[2]"
     >
       {isMobile && <SidebarMobileHeader />}
-      <DnDFileUploaderWrapper>
+      {!threadSlug ? (
+        <EmptyThreadState workspace={workspace} />
+      ) : (
+        <DnDFileUploaderWrapper>
         <MetricsProvider>
           <ChatHistory
             history={chatHistory}
@@ -322,8 +326,39 @@ export default function ChatContainer({ workspace, knownHistory = [] }) {
           sendCommand={sendCommand}
           attachments={files}
         />
-      </DnDFileUploaderWrapper>
+        </DnDFileUploaderWrapper>
+      )}
       <ChatTooltips />
+    </div>
+  );
+}
+
+function EmptyThreadState({ workspace }) {
+  const [creating, setCreating] = useState(false);
+
+  const onCreate = async () => {
+    try {
+      setCreating(true);
+      const { thread, error } = await Workspace.threads.new(workspace.slug);
+      if (error || !thread?.slug) throw new Error(error || "Failed to create thread");
+      window.location.replace(paths.workspace.thread(workspace.slug, thread.slug));
+    } catch (e) {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
+      <p className="text-sm text-white/70 light:text-theme-text-secondary">
+        No thread selected. Create a thread to start chatting.
+      </p>
+      <button
+        onClick={onCreate}
+        disabled={creating}
+        className="transition-all duration-300 bg-white text-black hover:opacity-80 disabled:opacity-50 px-4 py-2 rounded-lg text-sm"
+      >
+        {creating ? "Creating..." : "+ New Thread"}
+      </button>
     </div>
   );
 }
