@@ -931,13 +931,13 @@ const TRANSLATIONS = {
   },
 
   chat_window: {
-    welcome: "Welcome to Allison, your Community Reinvestment Act compliance assistant.",
-    get_started: "I'm here to help automate your CRA compliance processes. To get started either",
+    welcome: "Welcome to Allison, your CRA compliance assistant.",
+    get_started: "Get started by uploading documents or asking questions about CRA compliance.",
     get_started_default: "To get started",
-    upload: "upload CRA-related documents",
+    upload: "upload documents",
     or: "or",
     attachments_processing: "Attachments are processing. Please wait...",
-    send_chat: "ask me about CRA compliance.",
+    send_chat: "ask about compliance.",
     send_message: "Send a message",
     attach_file: "Attach a file to this chat",
     slash: "View all available slash commands for chatting.",
