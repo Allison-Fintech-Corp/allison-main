@@ -18,6 +18,7 @@ import { LogoProvider } from "./LogoContext";
 import { FullScreenLoader } from "./components/Preloader";
 import { ThemeProvider } from "./ThemeContext";
 import KeyboardShortcutsHelp from "@/components/KeyboardShortcutsHelp";
+import DefaultWorkspaceRedirect from "@/components/DefaultWorkspaceRedirect";
 
 const Main = lazy(() => import("@/pages/Main"));
 const InvitePage = lazy(() => import("@/pages/Invite"));
@@ -102,7 +103,8 @@ export default function App() {
             <PfpProvider>
               <I18nextProvider i18n={i18n}>
                 <Routes>
-                  <Route path="/" element={<PrivateRoute Component={Main} />} />
+                  <Route path="/" element={<PrivateRoute Component={DefaultWorkspaceRedirect} />} />
+                  <Route path="/home" element={<PrivateRoute Component={Main} />} />
                   <Route path="/login" element={<Login />} />
                   <Route
                     path="/sso/simple"
